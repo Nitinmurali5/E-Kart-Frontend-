@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+
 const Cart = () => {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
@@ -12,9 +13,9 @@ const Cart = () => {
       return;
     }
 
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    const storedCart = JSON.parse(localStorage.getItem("cart")|| []);
     setCart(storedCart);
-  }, []);
+  }, [navigate]);
 
   function updateCart(updatedCart) {
     setCart(updatedCart);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../services/api";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -11,11 +12,15 @@ const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch("https://e-kart-qxqs.onrender.com/products");
+        const res = await fetch(`${API}/products`);
+         if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
         const data = await res.json();
-        setProducts(data.products);
+       setProducts(data.products || []);
       } catch (err) {
-        setError("Server error");
+         console.error(err);
+         setError("Unable to fetch products");
       } finally {
         setLoading(false);
       }
@@ -54,6 +59,9 @@ const Products = () => {
       <h1 style={title}>Products</h1>
 
       <div style={grid}>
+        {products.length === 0 && (
+       <h3 style={{ textAlign: "center" }}>No products available</h3>
+       )}
         {products.map((product) => (
           <div key={product._id} style={card}>
             <img

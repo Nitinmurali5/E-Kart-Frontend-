@@ -1,42 +1,45 @@
 import { useState } from "react";
 import "../styles/auth.css";
+import API from "../services/api";
 import { useNavigate } from "react-router-dom";
-
 
 const Signin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  // NEW STATE (required for popup)
   const [popupMsg, setPopupMsg] = useState("");
   const [showPopup, setShowPopup] = useState(false);
 
- async function handleSubmit(e) {
-  e.preventDefault();
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-  const res = await fetch("https://e-kart-qxqs.onrender.com/signin", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
+    try {
+      const res = await fetch(`${API}/signin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-  const data = await res.json();
+      const data = await res.json();
 
-  setPopupMsg(data.msg);
-  setShowPopup(true);
+      setPopupMsg(data.msg || "Login failed");
+      setShowPopup(true);
 
-  // ✅ Redirect to Home after successful login
-  if (res.ok && data.token) {
-    localStorage.setItem("token", data.token);
-     localStorage.setItem("userEmail", email);
+      if (res.ok && data.token) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("userEmail", email);
 
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 1500);
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
+      }
+    } catch (err) {
+      console.error(err);
+      setPopupMsg("Unable to connect to server");
+      setShowPopup(true);
+    }
   }
-}
-
 
   return (
     <div className="auth-page">
@@ -49,6 +52,7 @@ const Signin = () => {
           className="auth-input"
           placeholder="Email"
           type="email"
+          required
           onChange={(e) => setEmail(e.target.value)}
         />
 
@@ -56,23 +60,23 @@ const Signin = () => {
           className="auth-input"
           placeholder="Password"
           type="password"
+          required
           onChange={(e) => setPassword(e.target.value)}
         />
 
         <button className="auth-button" type="submit">
           Sign In
         </button>
-        
-<p className="auth-footer">
-  <a href="/forgot-password">Forgot password?</a>
-</p>
+
+        <p className="auth-footer">
+          <a href="/forgot-password">Forgot password?</a>
+        </p>
 
         <p className="auth-footer">
           No account? <a href="/signup">Sign up</a>
         </p>
       </form>
 
-      {/* Popup Modal */}
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-box">
@@ -85,7 +89,6 @@ const Signin = () => {
             </button>
           </div>
         </div>
-        
       )}
     </div>
   );

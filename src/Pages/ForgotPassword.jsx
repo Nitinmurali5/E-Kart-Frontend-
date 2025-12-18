@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/auth.css";
+import API from "../services/api";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -12,22 +13,27 @@ const ForgotPassword = () => {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const res = await fetch("https://e-kart-qxqs.onrender.com/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
+    try {
+      const res = await fetch(`${API}/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setPopupMsg(data.msg);
-    setShowPopup(true);
+      setPopupMsg(data.msg || "Failed to send OTP");
+      setShowPopup(true);
 
-    // ✅ Redirect to Reset Password page after OTP sent
-    if (res.ok) {
-      setTimeout(() => {
-        navigate("/reset-password", { state: { email } });
-      }, 1500);
+      if (res.ok) {
+        setTimeout(() => {
+          navigate("/reset-password", { state: { email } });
+        }, 1500);
+      }
+    } catch (err) {
+      console.error(err);
+      setPopupMsg("Unable to connect to server");
+      setShowPopup(true);
     }
   }
 
@@ -42,8 +48,8 @@ const ForgotPassword = () => {
           className="auth-input"
           type="email"
           placeholder="Enter registered email"
-          onChange={(e) => setEmail(e.target.value)}
           required
+          onChange={(e) => setEmail(e.target.value)}
         />
 
         <button className="auth-button" type="submit">
@@ -59,6 +65,12 @@ const ForgotPassword = () => {
         <div className="popup-overlay">
           <div className="popup-box">
             <p>{popupMsg}</p>
+            <button
+              className="popup-btn"
+              onClick={() => setShowPopup(false)}
+            >
+              OK
+            </button>
           </div>
         </div>
       )}

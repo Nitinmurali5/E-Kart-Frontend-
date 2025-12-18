@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/checkout.css";
+import API from "../services/api";
 
 const Checkout = () => {
   const [cart, setCart] = useState([]);
@@ -9,20 +10,21 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/signin");
-      return;
-    }
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigate("/signin");
+    return;
+  }
 
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    if (storedCart.length === 0) {
-      navigate("/products");
-      return;
-    }
+  const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+  if (storedCart.length === 0) {
+    navigate("/products");
+    return;
+  }
 
-    setCart(storedCart);
-  }, []);
+  setCart(storedCart);
+}, [navigate]);
+
 
   const total = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -51,7 +53,7 @@ const Checkout = () => {
       totalAmount: total
     };
 
-    const res = await fetch("https://e-kart-qxqs.onrender.com/orders", {
+    const res = await fetch(`${API}/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderData)

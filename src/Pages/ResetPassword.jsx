@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
-
+import API from "../services/api";   
 const ResetPassword = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,19 +16,24 @@ const ResetPassword = () => {
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const res = await fetch("https://e-kart-qxqs.onrender.com/reset-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, otp, newPassword })
-    });
+    try {
+      const res = await fetch(`${API}/reset-password`, {   // ✅ fixed
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp, newPassword }),
+      });
 
-    const data = await res.json();
-    setPopupMsg(data.msg);
-    setShowPopup(true);
+      const data = await res.json();
+      setPopupMsg(data.msg);
+      setShowPopup(true);
 
-    // ✅ Redirect to Signin after success
-    if (res.ok) {
-      setTimeout(() => navigate("/signin"), 2000);
+      if (res.ok) {
+        setTimeout(() => navigate("/signin"), 2000);
+      }
+    } catch (err) {
+      console.error(err);
+      setPopupMsg("Unable to connect to server");
+      setShowPopup(true);
     }
   }
 
@@ -39,11 +44,7 @@ const ResetPassword = () => {
           <span>RESET PASSWORD</span>
         </div>
 
-        <input
-          className="auth-input"
-          value={email}
-          disabled
-        />
+        <input className="auth-input" value={email} disabled />
 
         <input
           className="auth-input"
